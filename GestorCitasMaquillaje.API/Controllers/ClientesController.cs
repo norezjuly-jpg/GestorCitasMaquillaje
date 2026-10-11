@@ -1,58 +1,84 @@
 ﻿using GestorCitasMaquillaje.API.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using GestorCitasMaquillaje.API.Data;
+using GestorCitasMaquillaje.API.DTOs;
 
 namespace GestorCitasMaquillaje.API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class ClientesController : ControllerBase
     {
-        private static List<Cliente> clientes = new List<Cliente>
+        private readonly AppDbContext _context;
+
+        public ClientesController(AppDbContext context)
         {
-            new Cliente { Id = 1, Nombre = "María López", Telefono = "809-555-0101", Email = "maria@email.com" },
-            new Cliente { Id = 2, Nombre = "Ana Gómez", Telefono = "809-555-0202", Email = "ana@email.com" }
-        };
+            _context = context;
+        }
 
         [HttpGet]
-        public IActionResult Get() => Ok(clientes);
+        public async Task<ActionResult<IEnumerable<ClienteDto>>> GetAll()
+        {
+            var lista = await _context.Clientes
+                .Select(c => new ClienteDto
+                {
+                    Id = c.Id,
+                    Nombre = c.Nombre,
+                    Telefono = c.Telefono,
+                    Email = c.Email
+                }).ToListAsync();
+            return Ok(lista);
+        }
 
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        public async Task<ActionResult<ClienteDto>> GetById(int id)
         {
-            var cliente = clientes.FirstOrDefault(c => c.Id == id);
-            if (cliente == null) return NotFound("Cliente no encontrado.");
-            return Ok(cliente);
+            var c = await _context.Clientes.FindAsync(id);
+            if (c == null) return NotFound();
+            return Ok(new ClienteDto
+            {
+                Id = c.Id,
+                Nombre = c.Nombre,
+                Telefono = c.Telefono,
+                Email = c.Email
+            });
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] Cliente nuevoCliente)
+        public async Task<ActionResult<ClienteDto>> Create(ClienteCreateDto dto)
         {
-            nuevoCliente.Id = clientes.Max(c => c.Id) + 1;
-            clientes.Add(nuevoCliente);
-            return CreatedAtAction(nameof(Get), new { id = nuevoCliente.Id }, nuevoCliente);
+            var c = new Cliente
+            {
+                Nombre = dto.Nombre,
+                Telefono = dto.Telefono,
+                Email = dto.Email
+            };
+            _context.Clientes.Add(c);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetById), new { id = c.Id },
+                new ClienteDto { Id = c.Id, Nombre = c.Nombre, Telefono = c.Telefono, Email = c.Email });
         }
 
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] Cliente clienteActualizado)
+        public async Task<IActionResult> Update(int id, ClienteCreateDto dto)
         {
-            var cliente = clientes.FirstOrDefault(c => c.Id == id);
-            if (cliente == null) return NotFound("Cliente no encontrado.");
-
-            cliente.Nombre = clienteActualizado.Nombre;
-            cliente.Telefono = clienteActualizado.Telefono;
-            cliente.Email = clienteActualizado.Email;
-
+            var c = await _context.Clientes.FindAsync(id);
+            if (c == null) return NotFound();
+            c.Nombre = dto.Nombre;
+            c.Telefono = dto.Telefono;
+            c.Email = dto.Email;
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var cliente = clientes.FirstOrDefault(c => c.Id == id);
-            if (cliente == null) return NotFound("Cliente no encontrado.");
-
-            clientes.Remove(cliente);
+            var c = await _context.Clientes.FindAsync(id);
+            if (c == null) return NotFound();
+            _context.Clientes.Remove(c);
+            await _context.SaveChangesAsync();
             return NoContent();
         }
     }
