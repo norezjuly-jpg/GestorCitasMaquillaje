@@ -1,58 +1,84 @@
-﻿using GestorCitasMaquillaje.API.Models;
-using Microsoft.AspNetCore.Http;
+﻿using GestorCitasMaquillaje.API.Data;
+using GestorCitasMaquillaje.API.DTOs;
+using GestorCitasMaquillaje.API.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace GestorCitasMaquillaje.API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class ServiciosController : ControllerBase
     {
-        private static List<Servicio> servicios = new List<Servicio>
+        private readonly AppDbContext _context;
+
+        public ServiciosController(AppDbContext context)
         {
-            new Servicio { Id = 1, Nombre = "Maquillaje Social", Precio = 2500, DuracionMinutos = 60 },
-            new Servicio { Id = 2, Nombre = "Maquillaje de Novia", Precio = 5000, DuracionMinutos = 90 }
-        };
+            _context = context;
+        }
 
         [HttpGet]
-        public IActionResult Get() => Ok(servicios);
+        public async Task<ActionResult<IEnumerable<ServicioDto>>> GetAll()
+        {
+            var lista = await _context.Servicios
+                .Select(s => new ServicioDto
+                {
+                    Id = s.Id,
+                    Nombre = s.Nombre,
+                    Precio = s.Precio,
+                    DuracionMinutos = s.DuracionMinutos
+                }).ToListAsync();
+            return Ok(lista);
+        }
 
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        public async Task<ActionResult<ServicioDto>> GetById(int id)
         {
-            var servicio = servicios.FirstOrDefault(s => s.Id == id);
-            if (servicio == null) return NotFound("Servicio no encontrado.");
-            return Ok(servicio);
+            var s = await _context.Servicios.FindAsync(id);
+            if (s == null) return NotFound();
+            return Ok(new ServicioDto
+            {
+                Id = s.Id,
+                Nombre = s.Nombre,
+                Precio = s.Precio,
+                DuracionMinutos = s.DuracionMinutos
+            });
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] Servicio nuevoServicio)
+        public async Task<ActionResult<ServicioDto>> Create(ServicioCreateDto dto)
         {
-            nuevoServicio.Id = servicios.Max(s => s.Id) + 1;
-            servicios.Add(nuevoServicio);
-            return CreatedAtAction(nameof(Get), new { id = nuevoServicio.Id }, nuevoServicio);
+            var s = new Servicio
+            {
+                Nombre = dto.Nombre,
+                Precio = dto.Precio,
+                DuracionMinutos = dto.DuracionMinutos
+            };
+            _context.Servicios.Add(s);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetById), new { id = s.Id },
+                new ServicioDto { Id = s.Id, Nombre = s.Nombre, Precio = s.Precio, DuracionMinutos = s.DuracionMinutos });
         }
 
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] Servicio servicioActualizado)
+        public async Task<IActionResult> Update(int id, ServicioCreateDto dto)
         {
-            var servicio = servicios.FirstOrDefault(s => s.Id == id);
-            if (servicio == null) return NotFound("Servicio no encontrado.");
-
-            servicio.Nombre = servicioActualizado.Nombre;
-            servicio.Precio = servicioActualizado.Precio;
-            servicio.DuracionMinutos = servicioActualizado.DuracionMinutos;
-
+            var s = await _context.Servicios.FindAsync(id);
+            if (s == null) return NotFound();
+            s.Nombre = dto.Nombre;
+            s.Precio = dto.Precio;
+            s.DuracionMinutos = dto.DuracionMinutos;
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var servicio = servicios.FirstOrDefault(s => s.Id == id);
-            if (servicio == null) return NotFound("Servicio no encontrado.");
-
-            servicios.Remove(servicio);
+            var s = await _context.Servicios.FindAsync(id);
+            if (s == null) return NotFound();
+            _context.Servicios.Remove(s);
+            await _context.SaveChangesAsync();
             return NoContent();
         }
     }
