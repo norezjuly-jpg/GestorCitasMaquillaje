@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using GestorCitasMaquillaje.API.Data;
+using GestorCitasMaquillaje.Infrastructure.Context;
+using GestorCitasMaquillaje.Infrastructure.Interfaces;
+using GestorCitasMaquillaje.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,11 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+builder.Services.AddScoped<IMaquillistaRepository, MaquillistaRepository>();
+builder.Services.AddScoped<IServicioRepository, ServicioRepository>();
+builder.Services.AddScoped<ICitaRepository, CitaRepository>();
 
 var app = builder.Build();
 

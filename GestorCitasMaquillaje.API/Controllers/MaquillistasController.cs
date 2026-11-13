@@ -1,4 +1,5 @@
-﻿using GestorCitasMaquillaje.API.Models;
+﻿using GestorCitasMaquillaje.Domain.Entities;
+using GestorCitasMaquillaje.Infrastructure.Context;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

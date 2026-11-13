@@ -1,8 +1,8 @@
-﻿using GestorCitasMaquillaje.API.Data;
-using GestorCitasMaquillaje.API.DTOs;
-using GestorCitasMaquillaje.API.Models;
+﻿using GestorCitasMaquillaje.API.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using GestorCitasMaquillaje.Domain.Entities;
+using GestorCitasMaquillaje.Infrastructure.Context;
 
 namespace GestorCitasMaquillaje.API.Controllers
 {
