@@ -1,85 +1,36 @@
-﻿using GestorCitasMaquillaje.API.DTOs;
+﻿using GestorCitasMaquillaje.Application.Contract;
+using GestorCitasMaquillaje.Application.Dtos;
+using GestorCitasMaquillaje.Application.Dtos.Servicio;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using GestorCitasMaquillaje.Domain.Entities;
-using GestorCitasMaquillaje.Infrastructure.Context;
 
-namespace GestorCitasMaquillaje.API.Controllers
+namespace GestorCitasMaquillaje.API.Controllers;
+
+public class ServiciosController : BaseApiController
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ServiciosController : ControllerBase
+    private readonly IServicioService _service;
+
+    public ServiciosController(IServicioService service)
     {
-        private readonly AppDbContext _context;
-
-        public ServiciosController(AppDbContext context)
-        {
-            _context = context;
-        }
-
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ServicioDto>>> GetAll()
-        {
-            var lista = await _context.Servicios
-                .Select(s => new ServicioDto
-                {
-                    Id = s.Id,
-                    Nombre = s.Nombre,
-                    Precio = s.Precio,
-                    DuracionMinutos = s.DuracionMinutos
-                }).ToListAsync();
-            return Ok(lista);
-        }
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ServicioDto>> GetById(int id)
-        {
-            var s = await _context.Servicios.FindAsync(id);
-            if (s == null) return NotFound();
-            return Ok(new ServicioDto
-            {
-                Id = s.Id,
-                Nombre = s.Nombre,
-                Precio = s.Precio,
-                DuracionMinutos = s.DuracionMinutos
-            });
-        }
-
-        [HttpPost]
-        public async Task<ActionResult<ServicioDto>> Create(ServicioCreateDto dto)
-        {
-            var s = new Servicio
-            {
-                Nombre = dto.Nombre,
-                Precio = dto.Precio,
-                DuracionMinutos = dto.DuracionMinutos
-            };
-            _context.Servicios.Add(s);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetById), new { id = s.Id },
-                new ServicioDto { Id = s.Id, Nombre = s.Nombre, Precio = s.Precio, DuracionMinutos = s.DuracionMinutos });
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, ServicioCreateDto dto)
-        {
-            var s = await _context.Servicios.FindAsync(id);
-            if (s == null) return NotFound();
-            s.Nombre = dto.Nombre;
-            s.Precio = dto.Precio;
-            s.DuracionMinutos = dto.DuracionMinutos;
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var s = await _context.Servicios.FindAsync(id);
-            if (s == null) return NotFound();
-            _context.Servicios.Remove(s);
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
+        _service = service;
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll() => Responder(await _service.GetAllAsync());
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id) => Responder(await _service.GetByIdAsync(id));
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CrearServicioDto dto) =>
+        Responder(await _service.CreateAsync(dto));
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, [FromBody] ActualizarServicioDto dto)
+    {
+        dto.Id = id;
+        return Responder(await _service.UpdateAsync(dto));
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id) => Responder(await _service.DeleteAsync(id));
 }

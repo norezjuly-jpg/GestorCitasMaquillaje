@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GestorCitasMaquillaje.Domai
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GestorCitasMaquillaje.Infrastructure", "GestorCitasMaquillaje.Infrastructure\GestorCitasMaquillaje.Infrastructure.csproj", "{E6F85866-FD5B-49EF-BF5E-C0B0391F78E9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GestorCitasMaquillaje.Application", "GestorCitasMaquillaje.Application\GestorCitasMaquillaje.Application.csproj", "{5E43A769-686E-445F-9CB2-3BE5D22CCFB6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{E6F85866-FD5B-49EF-BF5E-C0B0391F78E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E6F85866-FD5B-49EF-BF5E-C0B0391F78E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E6F85866-FD5B-49EF-BF5E-C0B0391F78E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E43A769-686E-445F-9CB2-3BE5D22CCFB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E43A769-686E-445F-9CB2-3BE5D22CCFB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E43A769-686E-445F-9CB2-3BE5D22CCFB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E43A769-686E-445F-9CB2-3BE5D22CCFB6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

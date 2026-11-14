@@ -1,60 +1,47 @@
-﻿using GestorCitasMaquillaje.Domain.Entities;
-using GestorCitasMaquillaje.Infrastructure.Context;
+﻿using GestorCitasMaquillaje.Application.Contract;
+using GestorCitasMaquillaje.Application.Dtos;
+using GestorCitasMaquillaje.Application.Dtos.Cita;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GestorCitasMaquillaje.API.Controllers
+namespace GestorCitasMaquillaje.API.Controllers;
+
+public class CitasController : BaseApiController
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class CitasController : ControllerBase
+    private readonly ICitaService _service;
+
+    public CitasController(ICitaService service)
     {
-        private static List<Cita> citas = new List<Cita>
-        {
-            new Cita { Id = 1, ClienteId = 1, MaquillistaId = 1, ServicioId = 1, FechaHora = DateTime.Now.AddDays(1), Estado = "Confirmada" }
-        };
-
-        [HttpGet]
-        public IActionResult Get() => Ok(citas);
-
-        [HttpGet("{id}")]
-        public IActionResult Get(int id)
-        {
-            var cita = citas.FirstOrDefault(c => c.Id == id);
-            if (cita == null) return NotFound("Cita no encontrada.");
-            return Ok(cita);
-        }
-
-        [HttpPost]
-        public IActionResult Post([FromBody] Cita nuevaCita)
-        {
-            nuevaCita.Id = citas.Max(c => c.Id) + 1;
-            citas.Add(nuevaCita);
-            return CreatedAtAction(nameof(Get), new { id = nuevaCita.Id }, nuevaCita);
-        }
-
-        [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] Cita citaActualizada)
-        {
-            var cita = citas.FirstOrDefault(c => c.Id == id);
-            if (cita == null) return NotFound("Cita no encontrada.");
-
-            cita.ClienteId = citaActualizada.ClienteId;
-            cita.MaquillistaId = citaActualizada.MaquillistaId;
-            cita.ServicioId = citaActualizada.ServicioId;
-            cita.FechaHora = citaActualizada.FechaHora;
-            cita.Estado = citaActualizada.Estado;
-
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
-            var cita = citas.FirstOrDefault(c => c.Id == id);
-            if (cita == null) return NotFound("Cita no encontrada.");
-
-            citas.Remove(cita);
-            return NoContent();
-        }
+        _service = service;
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll() => Responder(await _service.GetAllAsync());
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id) => Responder(await _service.GetByIdAsync(id));
+
+    [HttpGet("cliente/{clienteId}")]
+    public async Task<IActionResult> GetByCliente(int clienteId) =>
+        Responder(await _service.GetByClienteAsync(clienteId));
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CrearCitaDto dto) =>
+        Responder(await _service.CreateAsync(dto));
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, [FromBody] ActualizarCitaDto dto)
+    {
+        dto.Id = id;
+        return Responder(await _service.UpdateAsync(dto));
+    }
+
+    [HttpPut("{id}/cancelar")]
+    public async Task<IActionResult> Cancelar(int id, [FromBody] CancelarCitaDto dto)
+    {
+        dto.Id = id;
+        return Responder(await _service.CancelarAsync(dto));
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id) => Responder(await _service.DeleteAsync(id));
 }

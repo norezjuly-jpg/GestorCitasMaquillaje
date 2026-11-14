@@ -1,60 +1,36 @@
-﻿using GestorCitasMaquillaje.Domain.Entities;
-using GestorCitasMaquillaje.Infrastructure.Context;
-using Microsoft.AspNetCore.Http;
+﻿using GestorCitasMaquillaje.Application.Contract;
+using GestorCitasMaquillaje.Application.Dtos;
+using GestorCitasMaquillaje.Application.Dtos.Maquillista;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GestorCitasMaquillaje.API.Controllers
+namespace GestorCitasMaquillaje.API.Controllers;
+
+public class MaquillistasController : BaseApiController
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class MaquillistasController : ControllerBase
+    private readonly IMaquillistaService _service;
+
+    public MaquillistasController(IMaquillistaService service)
     {
-        private static List<Maquillista> maquillistas = new List<Maquillista>
-        {
-            new Maquillista { Id = 1, Nombre = "Laura Martínez", Especialidad = "Maquillaje Social y Novias", Disponible = true },
-            new Maquillista { Id = 2, Nombre = "Carla Pérez", Especialidad = "Maquillaje de Caracterización", Disponible = true }
-        };
-
-        [HttpGet]
-        public IActionResult Get() => Ok(maquillistas);
-
-        [HttpGet("{id}")]
-        public IActionResult Get(int id)
-        {
-            var maquillista = maquillistas.FirstOrDefault(m => m.Id == id);
-            if (maquillista == null) return NotFound("Maquillista no encontrada.");
-            return Ok(maquillista);
-        }
-
-        [HttpPost]
-        public IActionResult Post([FromBody] Maquillista nuevaMaquillista)
-        {
-            nuevaMaquillista.Id = maquillistas.Max(m => m.Id) + 1;
-            maquillistas.Add(nuevaMaquillista);
-            return CreatedAtAction(nameof(Get), new { id = nuevaMaquillista.Id }, nuevaMaquillista);
-        }
-
-        [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] Maquillista maquillistaActualizada)
-        {
-            var maquillista = maquillistas.FirstOrDefault(m => m.Id == id);
-            if (maquillista == null) return NotFound("Maquillista no encontrada.");
-
-            maquillista.Nombre = maquillistaActualizada.Nombre;
-            maquillista.Especialidad = maquillistaActualizada.Especialidad;
-            maquillista.Disponible = maquillistaActualizada.Disponible;
-
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
-            var maquillista = maquillistas.FirstOrDefault(m => m.Id == id);
-            if (maquillista == null) return NotFound("Maquillista no encontrada.");
-
-            maquillistas.Remove(maquillista);
-            return NoContent();
-        }
+        _service = service;
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll() => Responder(await _service.GetAllAsync());
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id) => Responder(await _service.GetByIdAsync(id));
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CrearMaquillistaDto dto) =>
+        Responder(await _service.CreateAsync(dto));
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, [FromBody] ActualizarMaquillistaDto dto)
+    {
+        dto.Id = id;
+        return Responder(await _service.UpdateAsync(dto));
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id) => Responder(await _service.DeleteAsync(id));
 }

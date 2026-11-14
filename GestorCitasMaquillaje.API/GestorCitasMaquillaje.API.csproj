@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GestorCitasMaquillaje.Application\GestorCitasMaquillaje.Application.csproj" />
     <ProjectReference Include="..\GestorCitasMaquillaje.Domain\GestorCitasMaquillaje.Domain.csproj" />
     <ProjectReference Include="..\GestorCitasMaquillaje.Infrastructure\GestorCitasMaquillaje.Infrastructure.csproj" />
   </ItemGroup>
